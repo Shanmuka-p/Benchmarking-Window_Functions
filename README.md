@@ -1,6 +1,6 @@
 # PostgreSQL Analytics Benchmarking Suite: Window Functions vs. CTEs
 
-A high-scale, production-grade analytics benchmarking suite built on PostgreSQL 15+ comparing **Window Functions (WF)** versus **Common Table Expressions (CTEs)** on **1.2 Million records** (200,000 users and 1,000,000 orders).
+Building A high-scale, production-grade analytics benchmarking suite built on PostgreSQL 15+ comparing **Window Functions (WF)** versus **Common Table Expressions (CTEs)** on **1.2 Million records** (200,000 users and 1,000,000 orders).
 
 ---
 
