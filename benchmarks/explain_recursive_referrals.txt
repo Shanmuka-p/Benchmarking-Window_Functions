@@ -1,0 +1,47 @@
+Sort  (cost=139505.11..139505.61 rows=200 width=8) (actual time=604.572..604.579 rows=100.00 loops=1)
+  Sort Key: (max(referral_chain.chain_depth)) DESC, referral_chain.root_user_id
+  Sort Method: quicksort  Memory: 27kB
+  Buffers: shared hit=28677 read=18, temp read=1604 written=2333
+  CTE referral_chain
+    ->  Recursive Union  (cost=28236.93..138682.46 rows=32520 width=12) (actual time=292.540..600.680 rows=17852.00 loops=1)
+          Storage: Memory  Maximum Storage: 579kB
+          Buffers: shared hit=28674 read=18, temp read=1604 written=2333
+          ->  Nested Loop  (cost=28236.93..28649.51 rows=100 width=12) (actual time=292.538..292.625 rows=100.00 loops=1)
+                Buffers: shared hit=11289 read=3, temp read=483 written=1092
+                ->  Limit  (cost=28236.51..28236.76 rows=100 width=12) (actual time=292.152..292.162 rows=100.00 loops=1)
+                      Buffers: shared hit=10991, temp read=483 written=1092
+                      ->  Sort  (cost=28236.51..28353.09 rows=46631 width=12) (actual time=292.151..292.156 rows=100.00 loops=1)
+                            Sort Key: (count(*)) DESC, orders.user_id
+                            Sort Method: top-N heapsort  Memory: 31kB
+                            Buffers: shared hit=10991, temp read=483 written=1092
+                            ->  HashAggregate  (cost=25988.00..26454.31 rows=46631 width=12) (actual time=244.847..282.649 rows=177087.00 loops=1)
+                                  Group Key: orders.user_id
+                                  Batches: 5  Memory Usage: 8249kB  Disk Usage: 5896kB
+                                  Buffers: shared hit=10988, temp read=483 written=1092
+                                  ->  Seq Scan on orders  (cost=0.00..20988.00 rows=1000000 width=4) (actual time=0.024..44.467 rows=1000000.00 loops=1)
+                                        Buffers: shared hit=10988
+                ->  Index Only Scan using users_pkey on users u  (cost=0.42..4.12 rows=1 width=4) (actual time=0.004..0.004 rows=1.00 loops=100)
+                      Index Cond: (user_id = orders.user_id)
+                      Heap Fetches: 0
+                      Index Searches: 100
+                      Buffers: shared hit=298 read=3
+          ->  Hash Join  (cost=7022.00..10970.77 rows=3242 width=12) (actual time=25.891..30.501 rows=1775.20 loops=10)
+                Hash Cond: (rc.current_user_id = u_1.referred_by)
+                Buffers: shared hit=17385 read=15, temp read=1121 written=1241
+                ->  WorkTable Scan on referral_chain rc  (cost=0.00..20.00 rows=1000 width=12) (actual time=0.002..0.091 rows=1785.20 loops=10)
+                ->  Hash  (cost=3740.00..3740.00 rows=200000 width=8) (actual time=24.780..24.780 rows=70078.00 loops=10)
+                      Buckets: 262144  Batches: 2  Memory Usage: 3418kB
+                      Buffers: shared hit=17385 read=15, temp written=1190
+                      ->  Seq Scan on users u_1  (cost=0.00..3740.00 rows=200000 width=8) (actual time=0.117..12.999 rows=200000.00 loops=10)
+                            Buffers: shared hit=17385 read=15
+  ->  HashAggregate  (cost=813.00..815.00 rows=200 width=8) (actual time=604.518..604.526 rows=100.00 loops=1)
+        Group Key: referral_chain.root_user_id
+        Batches: 1  Memory Usage: 32kB
+        Buffers: shared hit=28674 read=18, temp read=1604 written=2333
+        ->  CTE Scan on referral_chain  (cost=0.00..650.40 rows=32520 width=8) (actual time=292.541..602.740 rows=17852.00 loops=1)
+              Storage: Memory  Maximum Storage: 954kB
+              Buffers: shared hit=28674 read=18, temp read=1604 written=2333
+Planning:
+  Buffers: shared hit=205 read=37 dirtied=1
+Planning Time: 3.398 ms
+Execution Time: 607.156 ms

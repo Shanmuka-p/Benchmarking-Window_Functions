@@ -1,0 +1,18 @@
+Subquery Scan on ranked_orders  (cost=175337.49..220361.84 rows=5000 width=84) (actual time=469.292..820.268 rows=177087.00 loops=1)
+  Filter: (ranked_orders.rn = 1)
+  Buffers: shared hit=10994, temp read=11985 written=12004
+  ->  WindowAgg  (cost=175337.49..207836.84 rows=1000000 width=132) (actual time=469.289..793.462 rows=177087.00 loops=1)
+        Window: w AS (PARTITION BY orders.user_id ORDER BY orders.created_at, orders.order_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+        Run Condition: (row_number() OVER w <= 1)
+        Storage: Memory  Maximum Storage: 2991kB
+        Buffers: shared hit=10994, temp read=11985 written=12004
+        ->  Sort  (cost=175336.84..177836.84 rows=1000000 width=34) (actual time=463.490..545.694 rows=1000000.00 loops=1)
+              Sort Key: orders.user_id, orders.created_at, orders.order_id
+              Sort Method: external merge  Disk: 47944kB
+              Buffers: shared hit=10994, temp read=11985 written=12004
+              ->  Seq Scan on orders  (cost=0.00..20988.00 rows=1000000 width=34) (actual time=0.009..68.385 rows=1000000.00 loops=1)
+                    Buffers: shared hit=10988
+Planning:
+  Buffers: shared hit=24
+Planning Time: 0.124 ms
+Execution Time: 829.339 ms

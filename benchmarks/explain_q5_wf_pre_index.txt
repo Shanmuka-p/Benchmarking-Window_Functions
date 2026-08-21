@@ -1,0 +1,18 @@
+Incremental Sort  (cost=144573.22..207423.98 rows=1000000 width=84) (actual time=375.779..1071.299 rows=1000000.00 loops=1)
+  Sort Key: user_id, order_id
+  Presorted Key: user_id
+  Full-sort Groups: 21669  Sort Method: quicksort  Average Memory: 28kB  Peak Memory: 28kB
+  Pre-sorted Groups: 1267  Sort Method: quicksort  Average Memory: 3267kB  Peak Memory: 3267kB
+  Buffers: shared hit=10988, temp read=9049 written=9066
+  ->  WindowAgg  (cost=144572.19..172071.84 rows=1000000 width=84) (actual time=354.284..890.209 rows=1000000.00 loops=1)
+        Window: w1 AS (PARTITION BY user_id)
+        Storage: Memory  Maximum Storage: 2731kB
+        Buffers: shared hit=10988, temp read=9049 written=9066
+        ->  Sort  (cost=144571.84..147071.84 rows=1000000 width=26) (actual time=345.701..413.877 rows=1000000.00 loops=1)
+              Sort Key: user_id
+              Sort Method: external merge  Disk: 36200kB
+              Buffers: shared hit=10988, temp read=9049 written=9066
+              ->  Seq Scan on orders  (cost=0.00..20988.00 rows=1000000 width=26) (actual time=0.008..61.757 rows=1000000.00 loops=1)
+                    Buffers: shared hit=10988
+Planning Time: 0.062 ms
+Execution Time: 1096.509 ms

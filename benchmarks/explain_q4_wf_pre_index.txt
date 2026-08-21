@@ -1,0 +1,45 @@
+Subquery Scan on lagged  (cost=110686.79..114052.63 rows=160 width=12) (actual time=1082.762..1161.098 rows=48480.00 loops=1)
+  Filter: ((lagged.orders_last_30d < lagged.orders_prev_30d) AND (lagged.period_id = 2))
+  Rows Removed by Filter: 185060
+  Buffers: shared hit=21976, temp read=3734 written=4849
+  ->  WindowAgg  (cost=110686.79..112610.11 rows=96168 width=16) (actual time=1082.753..1150.541 rows=233540.00 loops=1)
+        Window: w1 AS (PARTITION BY orders.user_id ORDER BY "*VALUES*".column1)
+        Storage: Memory  Maximum Storage: 17kB
+        Buffers: shared hit=21976, temp read=3734 written=4849
+        ->  Sort  (cost=110686.75..110927.17 rows=96168 width=12) (actual time=1082.718..1099.308 rows=233540.00 loops=1)
+              Sort Key: orders.user_id, "*VALUES*".column1
+              Sort Method: external merge  Disk: 5048kB
+              Buffers: shared hit=21976, temp read=3734 written=4849
+              ->  HashAggregate  (cost=101525.17..102727.27 rows=96168 width=12) (actual time=969.583..1033.149 rows=233540.00 loops=1)
+                    Group Key: orders.user_id, "*VALUES*".column1
+                    Batches: 5  Memory Usage: 8249kB  Disk Usage: 11096kB
+                    Buffers: shared hit=21976, temp read=3103 written=4215
+                    ->  Hash Right Join  (cost=32228.90..100755.96 rows=102561 width=24) (actual time=307.173..856.701 rows=417664.00 loops=1)
+                          Hash Cond: (o.user_id = orders.user_id)
+                          Join Filter: ((("*VALUES*".column1 = 1) AND (o.created_at >= (CURRENT_DATE - '60 days'::interval)) AND (o.created_at < (CURRENT_DATE - '30 days'::interval))) OR (("*VALUES*".column1 = 2) AND (o.created_at >= (CURRENT_DATE - '30 days'::interval))))
+                          Rows Removed by Join Filter: 339013
+                          Buffers: shared hit=21976, temp read=2034 written=2034
+                          ->  Seq Scan on orders o  (cost=0.00..43488.00 rows=313037 width=28) (actual time=0.029..243.260 rows=339013.00 loops=1)
+                                Filter: (((created_at >= (CURRENT_DATE - '60 days'::interval)) AND (created_at < (CURRENT_DATE - '30 days'::interval))) OR (created_at >= (CURRENT_DATE - '30 days'::interval)))
+                                Rows Removed by Filter: 660987
+                                Buffers: shared hit=10988
+                          ->  Hash  (cost=31026.81..31026.81 rows=96168 width=8) (actual time=306.883..306.885 rows=233540.00 loops=1)
+                                Buckets: 262144 (originally 131072)  Batches: 2 (originally 1)  Memory Usage: 6629kB
+                                Buffers: shared hit=10988, temp written=397
+                                ->  Nested Loop  (cost=29343.83..31026.81 rows=96168 width=8) (actual time=225.043..275.933 rows=233540.00 loops=1)
+                                      Buffers: shared hit=10988
+                                      ->  HashAggregate  (cost=29343.83..29824.67 rows=48084 width=4) (actual time=225.031..244.587 rows=116770.00 loops=1)
+                                            Group Key: orders.user_id
+                                            Batches: 1  Memory Usage: 6937kB
+                                            Buffers: shared hit=10988
+                                            ->  Seq Scan on orders  (cost=0.00..28488.00 rows=342334 width=4) (actual time=0.034..151.647 rows=339013.00 loops=1)
+                                                  Filter: (created_at >= (CURRENT_DATE - '60 days'::interval))
+                                                  Rows Removed by Filter: 660987
+                                                  Buffers: shared hit=10988
+                                      ->  Materialize  (cost=0.00..0.04 rows=2 width=4) (actual time=0.000..0.000 rows=2.00 loops=116770)
+                                            Storage: Memory  Maximum Storage: 17kB
+                                            ->  Values Scan on "*VALUES*"  (cost=0.00..0.03 rows=2 width=4) (actual time=0.002..0.003 rows=2.00 loops=1)
+Planning:
+  Buffers: shared hit=6
+Planning Time: 0.303 ms
+Execution Time: 1168.713 ms

@@ -1,0 +1,34 @@
+Sort  (cost=155983.91..156150.58 rows=66667 width=44) (actual time=879.984..879.993 rows=240.00 loops=1)
+  Sort Key: ranked_users.cohort_month DESC, ranked_users.rank_in_cohort, ranked_users.user_id
+  Sort Method: quicksort  Memory: 34kB
+  Buffers: shared hit=12734, temp read=5341 written=7938
+  ->  Subquery Scan on ranked_users  (cost=141091.34..148591.32 rows=66667 width=44) (actual time=807.855..879.917 rows=240.00 loops=1)
+        Filter: (ranked_users.rank_in_cohort <= 10)
+        Rows Removed by Filter: 176847
+        Buffers: shared hit=12731, temp read=5341 written=7938
+        ->  WindowAgg  (cost=141091.34..146091.32 rows=200000 width=44) (actual time=807.855..874.282 rows=177087.00 loops=1)
+              Window: w1 AS (PARTITION BY u.cohort_month ORDER BY (round(sum(o.amount), 2)), u.user_id ROWS UNBOUNDED PRECEDING)
+              Storage: Memory  Maximum Storage: 17kB
+              Buffers: shared hit=12731, temp read=5341 written=7938
+              ->  Sort  (cost=141091.32..141591.32 rows=200000 width=40) (actual time=807.845..830.072 rows=177087.00 loops=1)
+                    Sort Key: u.cohort_month, (round(sum(o.amount), 2)) DESC, u.user_id
+                    Sort Method: external merge  Disk: 4344kB
+                    Buffers: shared hit=12731, temp read=5341 written=7938
+                    ->  HashAggregate  (cost=105245.56..118011.18 rows=200000 width=40) (actual time=547.655..706.249 rows=177087.00 loops=1)
+                          Group Key: u.user_id
+                          Planned Partitions: 8  Batches: 9  Memory Usage: 8273kB  Disk Usage: 23736kB
+                          Buffers: shared hit=12728, temp read=4798 written=7393
+                          ->  Hash Join  (cost=7022.00..41183.06 rows=1000000 width=14) (actual time=35.221..364.818 rows=1000000.00 loops=1)
+                                Hash Cond: (o.user_id = u.user_id)
+                                Buffers: shared hit=12728, temp read=2039 written=2039
+                                ->  Seq Scan on orders o  (cost=0.00..20988.00 rows=1000000 width=10) (actual time=0.012..60.071 rows=1000000.00 loops=1)
+                                      Buffers: shared hit=10988
+                                ->  Hash  (cost=3740.00..3740.00 rows=200000 width=8) (actual time=34.440..34.440 rows=200000.00 loops=1)
+                                      Buckets: 262144  Batches: 2  Memory Usage: 5974kB
+                                      Buffers: shared hit=1740, temp written=340
+                                      ->  Seq Scan on users u  (cost=0.00..3740.00 rows=200000 width=8) (actual time=0.012..14.409 rows=200000.00 loops=1)
+                                            Buffers: shared hit=1740
+Planning:
+  Buffers: shared hit=101
+Planning Time: 1.068 ms
+Execution Time: 889.037 ms

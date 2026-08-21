@@ -1,0 +1,15 @@
+Subquery Scan on user_order_arrays  (cost=175336.84..191539.14 rows=48092 width=84) (actual time=486.930..1221.025 rows=177087.00 loops=1)
+  Buffers: shared hit=10988, temp read=11985 written=12004
+  ->  GroupAggregate  (cost=175336.84..191298.68 rows=48092 width=84) (actual time=486.927..1195.356 rows=177087.00 loops=1)
+        Group Key: orders.user_id
+        Buffers: shared hit=10988, temp read=11985 written=12004
+        ->  Sort  (cost=175336.84..177836.84 rows=1000000 width=34) (actual time=464.045..551.144 rows=1000000.00 loops=1)
+              Sort Key: orders.user_id, orders.created_at, orders.order_id
+              Sort Method: external merge  Disk: 47944kB
+              Buffers: shared hit=10988, temp read=11985 written=12004
+              ->  Seq Scan on orders  (cost=0.00..20988.00 rows=1000000 width=34) (actual time=0.009..70.150 rows=1000000.00 loops=1)
+                    Buffers: shared hit=10988
+Planning:
+  Buffers: shared hit=16
+Planning Time: 0.147 ms
+Execution Time: 1230.521 ms

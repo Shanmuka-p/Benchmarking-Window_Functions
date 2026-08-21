@@ -1,0 +1,20 @@
+Subquery Scan on ranked_orders  (cost=3.50..161885.15 rows=5000 width=84) (actual time=64.101..2751.945 rows=177087.00 loops=1)
+  Filter: (ranked_orders.rn = 1)
+  Buffers: shared hit=1001223 read=2536
+  ->  WindowAgg  (cost=3.50..149360.15 rows=1000000 width=132) (actual time=64.096..2654.289 rows=177087.00 loops=1)
+        Window: w AS (PARTITION BY orders.user_id ORDER BY orders.created_at, orders.order_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+        Run Condition: (row_number() OVER w <= 1)
+        Storage: Memory  Maximum Storage: 2991kB
+        Buffers: shared hit=1001223 read=2536
+        ->  Incremental Sort  (cost=0.51..119360.15 rows=1000000 width=34) (actual time=0.089..1836.588 rows=1000000.00 loops=1)
+              Sort Key: orders.user_id, orders.created_at, orders.order_id
+              Presorted Key: orders.user_id, orders.created_at
+              Full-sort Groups: 31250  Sort Method: quicksort  Average Memory: 26kB  Peak Memory: 26kB
+              Buffers: shared hit=1001223 read=2536
+              ->  Index Scan using idx_orders_user_created on orders  (cost=0.42..74360.15 rows=1000000 width=34) (actual time=0.009..1422.916 rows=1000000.00 loops=1)
+                    Index Searches: 1
+                    Buffers: shared hit=1001218 read=2535
+Planning:
+  Buffers: shared hit=10 read=10 dirtied=1
+Planning Time: 2.370 ms
+Execution Time: 2779.547 ms

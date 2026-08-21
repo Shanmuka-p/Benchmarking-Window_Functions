@@ -1,0 +1,17 @@
+Subquery Scan on user_order_arrays  (cost=0.51..133025.93 rows=46631 width=84) (actual time=154.717..4569.812 rows=177087.00 loops=1)
+  Buffers: shared hit=1003753
+  ->  GroupAggregate  (cost=0.51..132792.77 rows=46631 width=84) (actual time=154.712..4454.173 rows=177087.00 loops=1)
+        Group Key: orders.user_id
+        Buffers: shared hit=1003753
+        ->  Incremental Sort  (cost=0.51..119360.15 rows=1000000 width=34) (actual time=0.115..1825.327 rows=1000000.00 loops=1)
+              Sort Key: orders.user_id, orders.created_at, orders.order_id
+              Presorted Key: orders.user_id, orders.created_at
+              Full-sort Groups: 31250  Sort Method: quicksort  Average Memory: 26kB  Peak Memory: 26kB
+              Buffers: shared hit=1003753
+              ->  Index Scan using idx_orders_user_created on orders  (cost=0.42..74360.15 rows=1000000 width=34) (actual time=0.021..1386.615 rows=1000000.00 loops=1)
+                    Index Searches: 1
+                    Buffers: shared hit=1003753
+Planning:
+  Buffers: shared hit=13 read=3
+Planning Time: 2.079 ms
+Execution Time: 4590.312 ms

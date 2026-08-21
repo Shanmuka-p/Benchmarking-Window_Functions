@@ -1,0 +1,19 @@
+WindowAgg  (cost=86386.66..107906.96 rows=506361 width=68) (actual time=263.546..332.296 rows=91.00 loops=1)
+  Window: w1 AS (ORDER BY ((orders.created_at)::date) ROWS BETWEEN '6'::bigint PRECEDING AND CURRENT ROW)
+  Storage: Memory  Maximum Storage: 17kB
+  Buffers: shared hit=10991, temp read=1304 written=1311
+  ->  GroupAggregate  (cost=86386.62..97779.74 rows=506361 width=36) (actual time=262.777..332.125 rows=91.00 loops=1)
+        Group Key: ((orders.created_at)::date)
+        Buffers: shared hit=10991, temp read=1304 written=1311
+        ->  Sort  (cost=86386.62..87652.52 rows=506361 width=10) (actual time=262.050..290.340 rows=505959.00 loops=1)
+              Sort Key: ((orders.created_at)::date)
+              Sort Method: external merge  Disk: 10432kB
+              Buffers: shared hit=10991, temp read=1304 written=1311
+              ->  Seq Scan on orders  (cost=0.00..29753.90 rows=506361 width=10) (actual time=0.017..193.084 rows=505959.00 loops=1)
+                    Filter: (created_at >= (CURRENT_DATE - '90 days'::interval))
+                    Rows Removed by Filter: 494041
+                    Buffers: shared hit=10988
+Planning:
+  Buffers: shared hit=182 read=2
+Planning Time: 1.146 ms
+Execution Time: 334.124 ms
