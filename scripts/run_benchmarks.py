@@ -11,14 +11,16 @@ import sys
 import json
 import time
 import re
+import shutil
 import subprocess
 import psycopg2
 
-DB_PORT = 5433
-DB_HOST = "127.0.0.1"
-DB_USER = "postgres"
-DB_NAME = "analytics_db"
-PGBENCH_PATH = r"C:\Program Files\PostgreSQL\18\bin\pgbench.exe"
+# Dynamic Database Configuration with Environment Variable Fallbacks
+DB_HOST = os.getenv("POSTGRES_HOST", "127.0.0.1")
+DEFAULT_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
+DB_USER = os.getenv("POSTGRES_USER", "postgres")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres_password_123")
+DB_NAME = os.getenv("POSTGRES_DB", "analytics_db")
 
 BENCHMARK_DIR = "benchmarks"
 RESULTS_DIR = "results"
@@ -26,8 +28,77 @@ RESULTS_DIR = "results"
 os.makedirs(BENCHMARK_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
+# Find pgbench binary dynamically
+def find_pgbench():
+    pgbench_bin = shutil.which("pgbench")
+    if pgbench_bin:
+        return pgbench_bin
+    
+    # Common Windows PostgreSQL installation paths
+    candidate_paths = [
+        r"C:\Program Files\PostgreSQL\18\bin\pgbench.exe",
+        r"C:\Program Files\PostgreSQL\17\bin\pgbench.exe",
+        r"C:\Program Files\PostgreSQL\16\bin\pgbench.exe",
+        r"C:\Program Files\PostgreSQL\15\bin\pgbench.exe",
+        "/usr/bin/pgbench",
+        "/usr/local/bin/pgbench"
+    ]
+    for path in candidate_paths:
+        if os.path.exists(path):
+            return path
+    return "pgbench"
+
+PGBENCH_PATH = find_pgbench()
+RESOLVED_PORT = None
+
 def get_db_connection():
-    return psycopg2.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, dbname=DB_NAME)
+    global RESOLVED_PORT
+    if RESOLVED_PORT:
+        candidate_ports = [RESOLVED_PORT]
+    else:
+        candidate_ports = [DEFAULT_PORT, 5433, 5432, 5434]
+
+    passwords_to_try = [DB_PASSWORD, "", "postgres", "postgres_password_123"]
+
+    for port in candidate_ports:
+        for password in passwords_to_try:
+            try:
+                conn_kwargs = {
+                    "host": DB_HOST,
+                    "port": port,
+                    "user": DB_USER,
+                    "dbname": DB_NAME
+                }
+                if password:
+                    conn_kwargs["password"] = password
+                conn = psycopg2.connect(**conn_kwargs)
+                RESOLVED_PORT = port
+                return conn
+            except Exception:
+                continue
+
+    # Fallback to postgres default database if analytics_db doesn't exist yet
+    for port in candidate_ports:
+        for password in passwords_to_try:
+            try:
+                conn_kwargs = {
+                    "host": DB_HOST,
+                    "port": port,
+                    "user": DB_USER,
+                    "dbname": "postgres"
+                }
+                if password:
+                    conn_kwargs["password"] = password
+                conn = psycopg2.connect(**conn_kwargs)
+                RESOLVED_PORT = port
+                return conn
+            except Exception:
+                continue
+
+    raise psycopg2.OperationalError(
+        f"Could not connect to PostgreSQL on host '{DB_HOST}' using ports {candidate_ports}. "
+        "Ensure the database server or Docker container is running."
+    )
 
 def read_query(filepath):
     with open(filepath, "r", encoding="utf-8") as f:
@@ -177,6 +248,7 @@ def run_pgbench_tests():
     print("PHASE 3 STEP 3: CONCURRENT PGBENCH LOAD TESTING (10 CLIENTS)")
     print("==========================================")
     pgbench_results = {}
+    port_str = str(RESOLVED_PORT if RESOLVED_PORT else DEFAULT_PORT)
 
     for q_num, variant in [(1, "wf"), (1, "cte"), (2, "wf"), (2, "cte")]:
         query_file = f"queries/{'window' if variant == 'wf' else 'cte'}_q{q_num}.sql"
@@ -186,7 +258,7 @@ def run_pgbench_tests():
         cmd = [
             PGBENCH_PATH,
             "-h", DB_HOST,
-            "-p", str(DB_PORT),
+            "-p", port_str,
             "-U", DB_USER,
             "-c", "10",
             "-j", "2",
@@ -196,7 +268,7 @@ def run_pgbench_tests():
         ]
 
         env = os.environ.copy()
-        env["PGPASSWORD"] = ""
+        env["PGPASSWORD"] = DB_PASSWORD
         
         res = subprocess.run(cmd, capture_output=True, text=True, env=env)
         output = res.stdout
@@ -304,7 +376,7 @@ def main():
         "materialized_view": mv_metrics
     }
 
-    # Save to both results/benchmarks.json and root results.json to satisfy all requirements
+    # Save to both results/benchmarks.json and root results.json
     with open("results/benchmarks.json", "w", encoding="utf-8") as f:
         json.dump(final_output, f, indent=2)
 

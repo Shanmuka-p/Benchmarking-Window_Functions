@@ -1,30 +1,32 @@
-Sort  (cost=13817415795.95..13817417061.85 rows=506361 width=100) (actual time=247.420..247.425 rows=91.00 loops=1)
+Sort  (cost=13726495189.65..13726495289.65 rows=40000 width=100) (actual time=589.439..589.448 rows=91 loops=1)
   Sort Key: d1.day
-  Sort Method: quicksort  Memory: 29kB
-  Buffers: shared hit=10988
+  Sort Method: quicksort  Memory: 31kB
+  Buffers: shared hit=2368 read=8622
   CTE daily_rev
-    ->  HashAggregate  (cost=62192.65..74733.00 rows=506361 width=36) (actual time=245.971..246.050 rows=91.00 loops=1)
+    ->  HashAggregate  (cost=62083.69..74582.76 rows=504694 width=36) (actual time=586.754..586.863 rows=91 loops=1)
           Group Key: (orders.created_at)::date
-          Planned Partitions: 32  Batches: 1  Memory Usage: 569kB
-          Buffers: shared hit=10988
-          ->  Seq Scan on orders  (cost=0.00..29753.90 rows=506361 width=10) (actual time=0.015..188.065 rows=505959.00 loops=1)
+          Planned Partitions: 32  Batches: 1  Memory Usage: 849kB
+          Buffers: shared hit=2368 read=8622
+          ->  Seq Scan on orders  (cost=0.00..29751.74 rows=504694 width=10) (actual time=279.579..502.413 rows=504799 loops=1)
                 Filter: (created_at >= (CURRENT_DATE - '90 days'::interval))
-                Rows Removed by Filter: 494041
-                Buffers: shared hit=10988
-  ->  HashAggregate  (cost=13149516698.95..13817237701.73 rows=506361 width=100) (actual time=247.336..247.402 rows=91.00 loops=1)
+                Rows Removed by Filter: 495201
+                Buffers: shared hit=2368 read=8622
+  ->  HashAggregate  (cost=13063091657.59..13726415361.85 rows=40000 width=100) (actual time=589.208..589.384 rows=91 loops=1)
         Group Key: d1.day, d1.daily_revenue
-        Planned Partitions: 32  Batches: 1  Memory Usage: 569kB
-        Buffers: shared hit=10988
-        ->  Nested Loop  (cost=0.00..9695219220.46 rows=28489051369 width=68) (actual time=245.979..247.179 rows=616.00 loops=1)
+        Planned Partitions: 4  Batches: 1  Memory Usage: 849kB
+        Buffers: shared hit=2368 read=8622
+        ->  Nested Loop  (cost=0.00..9631500648.90 rows=28301781515 width=68) (actual time=586.768..588.772 rows=616 loops=1)
               Join Filter: ((d2.day <= d1.day) AND (d2.day >= ((d1.day - '6 days'::interval))::date))
               Rows Removed by Join Filter: 7665
-              Buffers: shared hit=10988
-              ->  CTE Scan on daily_rev d1  (cost=0.00..10127.22 rows=506361 width=36) (actual time=245.974..245.978 rows=91.00 loops=1)
-                    Storage: Memory  Maximum Storage: 20kB
-                    Buffers: shared hit=10988
-              ->  CTE Scan on daily_rev d2  (cost=0.00..10127.22 rows=506361 width=36) (actual time=0.000..0.005 rows=91.00 loops=91)
-                    Storage: Memory  Maximum Storage: 20kB
+              Buffers: shared hit=2368 read=8622
+              ->  CTE Scan on daily_rev d1  (cost=0.00..10093.88 rows=504694 width=36) (actual time=586.758..586.767 rows=91 loops=1)
+                    Buffers: shared hit=2368 read=8622
+              ->  CTE Scan on daily_rev d2  (cost=0.00..10093.88 rows=504694 width=36) (actual time=0.000..0.009 rows=91 loops=91)
 Planning:
-  Buffers: shared hit=15
-Planning Time: 0.140 ms
-Execution Time: 247.808 ms
+  Buffers: shared hit=13
+Planning Time: 0.227 ms
+JIT:
+  Functions: 18
+  Options: Inlining true, Optimization true, Expressions true, Deforming true
+  Timing: Generation 1.642 ms, Inlining 67.854 ms, Optimization 109.021 ms, Emission 102.663 ms, Total 281.181 ms
+Execution Time: 592.612 ms

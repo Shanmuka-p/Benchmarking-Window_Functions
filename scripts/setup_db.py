@@ -4,22 +4,50 @@ Database Setup and Seeding Script for Benchmarking Suite
 Creates analytics_db database and executes scripts/init.sql to generate 200,000 users and 1,000,000 orders.
 """
 
+import os
 import sys
 import time
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-DB_PORT = 5433
-DB_HOST = "127.0.0.1"
-DB_USER = "postgres"
-DB_NAME = "analytics_db"
+DB_HOST = os.getenv("POSTGRES_HOST", "127.0.0.1")
+DEFAULT_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
+DB_USER = os.getenv("POSTGRES_USER", "postgres")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres_password_123")
+DB_NAME = os.getenv("POSTGRES_DB", "analytics_db")
+
+def get_connection(dbname="postgres"):
+    candidate_ports = [DEFAULT_PORT, 5433, 5432, 5434]
+    passwords_to_try = [DB_PASSWORD, "", "postgres", "postgres_password_123"]
+
+    for port in candidate_ports:
+        for password in passwords_to_try:
+            try:
+                conn_kwargs = {
+                    "host": DB_HOST,
+                    "port": port,
+                    "user": DB_USER,
+                    "dbname": dbname
+                }
+                if password:
+                    conn_kwargs["password"] = password
+                conn = psycopg2.connect(**conn_kwargs)
+                return conn, port
+            except Exception:
+                continue
+
+    raise psycopg2.OperationalError(
+        f"Could not connect to PostgreSQL server on host '{DB_HOST}' using ports {candidate_ports}. "
+        "Ensure PostgreSQL server or Docker container is running."
+    )
 
 def main():
-    print(f"Connecting to PostgreSQL server at {DB_HOST}:{DB_PORT} as {DB_USER}...")
+    print(f"Connecting to PostgreSQL server at {DB_HOST}...")
     
     # Step 1: Connect to default postgres database to create analytics_db if needed
     try:
-        conn = psycopg2.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, dbname="postgres")
+        conn, resolved_port = get_connection(dbname="postgres")
+        print(f"Connected successfully on port {resolved_port}.")
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur = conn.cursor()
         
@@ -38,8 +66,8 @@ def main():
         sys.exit(1)
 
     # Step 2: Connect to analytics_db and run scripts/init.sql
-    print(f"Connecting to {DB_NAME}...")
-    conn = psycopg2.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, dbname=DB_NAME)
+    print(f"Connecting to {DB_NAME} on port {resolved_port}...")
+    conn, _ = get_connection(dbname=DB_NAME)
     conn.autocommit = True
     cur = conn.cursor()
 

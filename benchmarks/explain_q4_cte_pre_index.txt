@@ -1,44 +1,61 @@
-Sort  (cost=67911.89..67951.18 rows=15717 width=12) (actual time=392.711..397.324 rows=48480.00 loops=1)
-  Sort Key: orders.user_id
-  Sort Method: quicksort  Memory: 3052kB
-  Buffers: shared hit=21976
-  ->  Hash Left Join  (cost=66103.25..66816.41 rows=15717 width=12) (actual time=367.031..385.591 rows=48480.00 loops=1)
-        Hash Cond: (orders.user_id = l.user_id)
-        Filter: (COALESCE(l.orders_last_30d, 0) < ((count(*))::integer))
-        Rows Removed by Filter: 28129
-        Buffers: shared hit=21976
-        ->  Finalize HashAggregate  (cost=35116.99..35706.37 rows=47150 width=8) (actual time=183.714..191.702 rows=76609.00 loops=1)
-              Group Key: orders.user_id
-              Batches: 1  Memory Usage: 5145kB
-              Buffers: shared hit=10988
-              ->  Gather  (cost=22763.69..34551.19 rows=113160 width=12) (actual time=157.393..170.755 rows=90906.00 loops=1)
+Merge Left Join  (cost=50551.67..265256.81 rows=3615692 width=12) (actual time=496.420..658.836 rows=48940 loops=1)
+  Merge Cond: (orders.user_id = orders_1.user_id)
+  Filter: (COALESCE(((count(*))::integer), 0) < ((count(*))::integer))
+  Rows Removed by Filter: 27752
+  Buffers: shared hit=2748 read=19260
+  ->  Finalize GroupAggregate  (cost=26831.19..38737.92 rows=46538 width=8) (actual time=326.736..386.128 rows=76692 loops=1)
+        Group Key: orders.user_id
+        Buffers: shared hit=1326 read=9678
+        ->  Gather Merge  (cost=26831.19..37690.82 rows=93076 width=12) (actual time=326.669..363.770 rows=102686 loops=1)
+              Workers Planned: 2
+              Workers Launched: 2
+              Buffers: shared hit=1326 read=9678
+              ->  Sort  (cost=25831.17..25947.52 rows=46538 width=12) (actual time=272.230..280.736 rows=34229 loops=3)
+                    Sort Key: orders.user_id
+                    Sort Method: quicksort  Memory: 3224kB
+                    Buffers: shared hit=1326 read=9678
+                    Worker 0:  Sort Method: quicksort  Memory: 3093kB
+                    Worker 1:  Sort Method: quicksort  Memory: 2526kB
+                    ->  Partial HashAggregate  (cost=21757.67..22223.05 rows=46538 width=12) (actual time=248.421..258.221 rows=34229 loops=3)
+                          Group Key: orders.user_id
+                          Batches: 1  Memory Usage: 4625kB
+                          Buffers: shared hit=1312 read=9678
+                          Worker 0:  Batches: 1  Memory Usage: 4369kB
+                          Worker 1:  Batches: 1  Memory Usage: 4113kB
+                          ->  Parallel Seq Scan on orders  (cost=0.00..21406.67 rows=70201 width=4) (actual time=26.845..201.539 rows=55744 loops=3)
+                                Filter: ((created_at >= (CURRENT_DATE - '60 days'::interval)) AND (created_at < (CURRENT_DATE - '30 days'::interval)))
+                                Rows Removed by Filter: 277590
+                                Buffers: shared hit=1312 read=9678
+  ->  Materialize  (cost=23720.47..36229.86 rows=46616 width=8) (actual time=169.620..244.710 rows=77790 loops=1)
+        Buffers: shared hit=1422 read=9582
+        ->  Finalize GroupAggregate  (cost=23720.47..35647.16 rows=46616 width=8) (actual time=169.616..225.868 rows=77790 loops=1)
+              Group Key: orders_1.user_id
+              Buffers: shared hit=1422 read=9582
+              ->  Gather Merge  (cost=23720.47..34598.30 rows=93232 width=12) (actual time=169.546..203.797 rows=104008 loops=1)
                     Workers Planned: 2
                     Workers Launched: 2
-                    Buffers: shared hit=10988
-                    ->  Partial HashAggregate  (cost=21763.69..22235.19 rows=47150 width=12) (actual time=66.986..70.423 rows=30302.00 loops=3)
-                          Group Key: orders.user_id
-                          Batches: 1  Memory Usage: 4633kB
-                          Buffers: shared hit=10988
-                          Worker 0:  Batches: 1  Memory Usage: 1817kB
-                          Worker 1:  Batches: 1  Memory Usage: 1561kB
-                          ->  Parallel Seq Scan on orders  (cost=0.00..21404.67 rows=71805 width=4) (actual time=0.014..56.681 rows=55590.67 loops=3)
-                                Filter: ((created_at >= (CURRENT_DATE - '60 days'::interval)) AND (created_at < (CURRENT_DATE - '30 days'::interval)))
-                                Rows Removed by Filter: 277743
-                                Buffers: shared hit=10988
-        ->  Hash  (cost=30397.60..30397.60 rows=47093 width=8) (actual time=183.205..183.207 rows=78280.00 loops=1)
-              Buckets: 131072 (originally 65536)  Batches: 1 (originally 1)  Memory Usage: 4082kB
-              Buffers: shared hit=10988
-              ->  Subquery Scan on l  (cost=29338.00..30397.60 rows=47093 width=8) (actual time=162.180..175.202 rows=78280.00 loops=1)
-                    Buffers: shared hit=10988
-                    ->  HashAggregate  (cost=29338.00..29926.67 rows=47093 width=8) (actual time=162.179..171.174 rows=78280.00 loops=1)
-                          Group Key: orders_1.user_id
-                          Batches: 1  Memory Usage: 5145kB
-                          Buffers: shared hit=10988
-                          ->  Seq Scan on orders orders_1  (cost=0.00..28488.00 rows=170001 width=4) (actual time=0.031..130.899 rows=172241.00 loops=1)
-                                Filter: (created_at >= (CURRENT_DATE - '30 days'::interval))
-                                Rows Removed by Filter: 827759
-                                Buffers: shared hit=10988
+                    Buffers: shared hit=1422 read=9582
+                    ->  Sort  (cost=22720.45..22836.99 rows=46616 width=12) (actual time=136.200..144.817 rows=34670 loops=3)
+                          Sort Key: orders_1.user_id
+                          Sort Method: quicksort  Memory: 3544kB
+                          Buffers: shared hit=1422 read=9582
+                          Worker 0:  Sort Method: quicksort  Memory: 2430kB
+                          Worker 1:  Sort Method: quicksort  Memory: 2481kB
+                          ->  Partial HashAggregate  (cost=18639.56..19105.72 rows=46616 width=12) (actual time=115.528..123.509 rows=34670 loops=3)
+                                Group Key: orders_1.user_id
+                                Batches: 1  Memory Usage: 4881kB
+                                Buffers: shared hit=1408 read=9582
+                                Worker 0:  Batches: 1  Memory Usage: 4113kB
+                                Worker 1:  Batches: 1  Memory Usage: 4113kB
+                                ->  Parallel Seq Scan on orders orders_1  (cost=0.00..18281.67 rows=71578 width=4) (actual time=9.447..86.784 rows=57068 loops=3)
+                                      Filter: (created_at >= (CURRENT_DATE - '30 days'::interval))
+                                      Rows Removed by Filter: 276265
+                                      Buffers: shared hit=1408 read=9582
 Planning:
   Buffers: shared hit=3
-Planning Time: 0.181 ms
-Execution Time: 400.510 ms
+Planning Time: 0.568 ms
+JIT:
+  Functions: 55
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 11.623 ms, Inlining 0.000 ms, Optimization 3.865 ms, Emission 104.895 ms, Total 120.383 ms
+Execution Time: 671.321 ms

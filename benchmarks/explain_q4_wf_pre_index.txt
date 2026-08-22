@@ -1,45 +1,45 @@
-Subquery Scan on lagged  (cost=110686.79..114052.63 rows=160 width=12) (actual time=1082.762..1161.098 rows=48480.00 loops=1)
+Subquery Scan on lagged  (cost=111573.42..117813.43 rows=158 width=12) (actual time=1549.924..1860.319 rows=48940 loops=1)
   Filter: ((lagged.orders_last_30d < lagged.orders_prev_30d) AND (lagged.period_id = 2))
-  Rows Removed by Filter: 185060
-  Buffers: shared hit=21976, temp read=3734 written=4849
-  ->  WindowAgg  (cost=110686.79..112610.11 rows=96168 width=16) (actual time=1082.753..1150.541 rows=233540.00 loops=1)
-        Window: w1 AS (PARTITION BY orders.user_id ORDER BY "*VALUES*".column1)
-        Storage: Memory  Maximum Storage: 17kB
-        Buffers: shared hit=21976, temp read=3734 written=4849
-        ->  Sort  (cost=110686.75..110927.17 rows=96168 width=12) (actual time=1082.718..1099.308 rows=233540.00 loops=1)
-              Sort Key: orders.user_id, "*VALUES*".column1
-              Sort Method: external merge  Disk: 5048kB
-              Buffers: shared hit=21976, temp read=3734 written=4849
-              ->  HashAggregate  (cost=101525.17..102727.27 rows=96168 width=12) (actual time=969.583..1033.149 rows=233540.00 loops=1)
-                    Group Key: orders.user_id, "*VALUES*".column1
-                    Batches: 5  Memory Usage: 8249kB  Disk Usage: 11096kB
-                    Buffers: shared hit=21976, temp read=3103 written=4215
-                    ->  Hash Right Join  (cost=32228.90..100755.96 rows=102561 width=24) (actual time=307.173..856.701 rows=417664.00 loops=1)
+  Rows Removed by Filter: 184136
+  Buffers: shared hit=2400 read=19580, temp read=3667 written=3743
+  ->  WindowAgg  (cost=111573.42..116388.19 rows=95016 width=16) (actual time=1547.804..1841.219 rows=233076 loops=1)
+        Buffers: shared hit=2400 read=19580, temp read=3667 written=3743
+        ->  GroupAggregate  (cost=111573.42..113775.25 rows=95016 width=12) (actual time=1546.465..1716.226 rows=233076 loops=1)
+              Group Key: orders.user_id, "*VALUES*".column1
+              Buffers: shared hit=2400 read=19580, temp read=3667 written=3743
+              ->  Sort  (cost=111573.42..111826.95 rows=101413 width=24) (actual time=1545.085..1618.906 rows=417027 loops=1)
+                    Sort Key: orders.user_id, "*VALUES*".column1
+                    Sort Method: external merge  Disk: 12696kB
+                    Buffers: shared hit=2400 read=19580, temp read=3667 written=3743
+                    ->  Hash Right Join  (cost=32666.27..101058.49 rows=101413 width=24) (actual time=455.366..1336.439 rows=417027 loops=1)
                           Hash Cond: (o.user_id = orders.user_id)
                           Join Filter: ((("*VALUES*".column1 = 1) AND (o.created_at >= (CURRENT_DATE - '60 days'::interval)) AND (o.created_at < (CURRENT_DATE - '30 days'::interval))) OR (("*VALUES*".column1 = 2) AND (o.created_at >= (CURRENT_DATE - '30 days'::interval))))
-                          Rows Removed by Join Filter: 339013
-                          Buffers: shared hit=21976, temp read=2034 written=2034
-                          ->  Seq Scan on orders o  (cost=0.00..43488.00 rows=313037 width=28) (actual time=0.029..243.260 rows=339013.00 loops=1)
+                          Rows Removed by Join Filter: 338435
+                          Buffers: shared hit=2400 read=19580, temp read=2080 written=2148
+                          ->  Seq Scan on orders o  (cost=0.00..43490.00 rows=311327 width=28) (actual time=0.062..383.698 rows=338435 loops=1)
                                 Filter: (((created_at >= (CURRENT_DATE - '60 days'::interval)) AND (created_at < (CURRENT_DATE - '30 days'::interval))) OR (created_at >= (CURRENT_DATE - '30 days'::interval)))
-                                Rows Removed by Filter: 660987
-                                Buffers: shared hit=10988
-                          ->  Hash  (cost=31026.81..31026.81 rows=96168 width=8) (actual time=306.883..306.885 rows=233540.00 loops=1)
-                                Buckets: 262144 (originally 131072)  Batches: 2 (originally 1)  Memory Usage: 6629kB
-                                Buffers: shared hit=10988, temp written=397
-                                ->  Nested Loop  (cost=29343.83..31026.81 rows=96168 width=8) (actual time=225.043..275.933 rows=233540.00 loops=1)
-                                      Buffers: shared hit=10988
-                                      ->  HashAggregate  (cost=29343.83..29824.67 rows=48084 width=4) (actual time=225.031..244.587 rows=116770.00 loops=1)
+                                Rows Removed by Filter: 661565
+                                Buffers: shared hit=1216 read=9774
+                          ->  Hash  (cost=31478.57..31478.57 rows=95016 width=8) (actual time=454.753..454.756 rows=233076 loops=1)
+                                Buckets: 262144 (originally 131072)  Batches: 2 (originally 1)  Memory Usage: 6613kB
+                                Buffers: shared hit=1184 read=9806, temp read=49 written=514
+                                ->  Nested Loop  (cost=29340.67..31478.57 rows=95016 width=8) (actual time=324.653..409.458 rows=233076 loops=1)
+                                      Buffers: shared hit=1184 read=9806, temp read=49 written=117
+                                      ->  HashAggregate  (cost=29340.67..29815.76 rows=47508 width=4) (actual time=324.642..353.769 rows=116538 loops=1)
                                             Group Key: orders.user_id
-                                            Batches: 1  Memory Usage: 6937kB
-                                            Buffers: shared hit=10988
-                                            ->  Seq Scan on orders  (cost=0.00..28488.00 rows=342334 width=4) (actual time=0.034..151.647 rows=339013.00 loops=1)
+                                            Batches: 5  Memory Usage: 11057kB  Disk Usage: 672kB
+                                            Buffers: shared hit=1184 read=9806, temp read=49 written=117
+                                            ->  Seq Scan on orders  (cost=0.00..28490.00 rows=340270 width=4) (actual time=23.832..222.922 rows=338435 loops=1)
                                                   Filter: (created_at >= (CURRENT_DATE - '60 days'::interval))
-                                                  Rows Removed by Filter: 660987
-                                                  Buffers: shared hit=10988
-                                      ->  Materialize  (cost=0.00..0.04 rows=2 width=4) (actual time=0.000..0.000 rows=2.00 loops=116770)
-                                            Storage: Memory  Maximum Storage: 17kB
-                                            ->  Values Scan on "*VALUES*"  (cost=0.00..0.03 rows=2 width=4) (actual time=0.002..0.003 rows=2.00 loops=1)
+                                                  Rows Removed by Filter: 661565
+                                                  Buffers: shared hit=1184 read=9806
+                                      ->  Materialize  (cost=0.00..0.04 rows=2 width=4) (actual time=0.000..0.000 rows=2 loops=116538)
+                                            ->  Values Scan on "*VALUES*"  (cost=0.00..0.03 rows=2 width=4) (actual time=0.003..0.003 rows=2 loops=1)
 Planning:
   Buffers: shared hit=6
-Planning Time: 0.303 ms
-Execution Time: 1168.713 ms
+Planning Time: 0.358 ms
+JIT:
+  Functions: 38
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 2.374 ms, Inlining 0.000 ms, Optimization 0.820 ms, Emission 25.294 ms, Total 28.488 ms
+Execution Time: 1881.870 ms

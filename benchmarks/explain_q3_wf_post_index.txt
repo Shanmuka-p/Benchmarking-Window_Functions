@@ -1,20 +1,21 @@
-Subquery Scan on ranked_orders  (cost=3.50..161885.15 rows=5000 width=84) (actual time=64.101..2751.945 rows=177087.00 loops=1)
+Subquery Scan on ranked_orders  (cost=0.51..161890.98 rows=5000 width=84) (actual time=63.852..1676.558 rows=176919 loops=1)
   Filter: (ranked_orders.rn = 1)
-  Buffers: shared hit=1001223 read=2536
-  ->  WindowAgg  (cost=3.50..149360.15 rows=1000000 width=132) (actual time=64.096..2654.289 rows=177087.00 loops=1)
-        Window: w AS (PARTITION BY orders.user_id ORDER BY orders.created_at, orders.order_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
-        Run Condition: (row_number() OVER w <= 1)
-        Storage: Memory  Maximum Storage: 2991kB
-        Buffers: shared hit=1001223 read=2536
-        ->  Incremental Sort  (cost=0.51..119360.15 rows=1000000 width=34) (actual time=0.089..1836.588 rows=1000000.00 loops=1)
+  Buffers: shared hit=1000871 read=2851
+  ->  WindowAgg  (cost=0.51..149365.98 rows=1000000 width=132) (actual time=63.840..1609.721 rows=176919 loops=1)
+        Run Condition: (row_number() OVER (?) <= 1)
+        Buffers: shared hit=1000871 read=2851
+        ->  Incremental Sort  (cost=0.51..119365.98 rows=1000000 width=34) (actual time=10.972..1061.936 rows=1000000 loops=1)
               Sort Key: orders.user_id, orders.created_at, orders.order_id
               Presorted Key: orders.user_id, orders.created_at
-              Full-sort Groups: 31250  Sort Method: quicksort  Average Memory: 26kB  Peak Memory: 26kB
-              Buffers: shared hit=1001223 read=2536
-              ->  Index Scan using idx_orders_user_created on orders  (cost=0.42..74360.15 rows=1000000 width=34) (actual time=0.009..1422.916 rows=1000000.00 loops=1)
-                    Index Searches: 1
-                    Buffers: shared hit=1001218 read=2535
+              Full-sort Groups: 31250  Sort Method: quicksort  Average Memory: 27kB  Peak Memory: 27kB
+              Buffers: shared hit=1000871 read=2851
+              ->  Index Scan using idx_orders_user_created on orders  (cost=0.42..74365.98 rows=1000000 width=34) (actual time=10.857..793.748 rows=1000000 loops=1)
+                    Buffers: shared hit=1000865 read=2851
 Planning:
-  Buffers: shared hit=10 read=10 dirtied=1
-Planning Time: 2.370 ms
-Execution Time: 2779.547 ms
+  Buffers: shared hit=13 read=10 dirtied=2
+Planning Time: 0.329 ms
+JIT:
+  Functions: 17
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 1.072 ms, Inlining 0.000 ms, Optimization 0.432 ms, Emission 10.483 ms, Total 11.988 ms
+Execution Time: 1689.848 ms

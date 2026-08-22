@@ -1,50 +1,49 @@
-Sort  (cost=1655232.08..1655232.68 rows=240 width=44) (actual time=18453.705..18453.786 rows=240.00 loops=1)
+Sort  (cost=1655241.14..1655241.74 rows=240 width=44) (actual time=5790.633..5790.660 rows=240 loops=1)
   Sort Key: users.cohort_month DESC, ((SubPlan 2)), us.user_id
-  Sort Method: quicksort  Memory: 34kB
-  Buffers: shared hit=1002274 read=4014 written=27, temp read=142283 written=541
+  Sort Method: quicksort  Memory: 40kB
+  Buffers: shared hit=1001709 read=4546 written=17, temp read=142020 written=540
   CTE user_spend
-    ->  GroupAggregate  (cost=3708.63..102306.86 rows=200000 width=40) (actual time=78.383..2816.797 rows=177087.00 loops=1)
+    ->  GroupAggregate  (cost=3754.96..102313.29 rows=200000 width=40) (actual time=37.271..1279.424 rows=176919 loops=1)
           Group Key: u.user_id
-          Buffers: shared hit=1002273 read=3843 written=27
-          ->  Merge Join  (cost=3708.63..94306.86 rows=1000000 width=14) (actual time=0.041..2154.030 rows=1000000.00 loops=1)
+          Buffers: shared hit=1001708 read=4375 written=17
+          ->  Merge Join  (cost=3754.96..94313.29 rows=1000000 width=14) (actual time=0.055..1030.796 rows=1000000 loops=1)
                 Merge Cond: (u.user_id = o.user_id)
-                Buffers: shared hit=1002273 read=3843 written=27
-                ->  Index Scan using users_pkey on users u  (cost=0.42..6947.42 rows=200000 width=8) (actual time=0.022..85.576 rows=200000.00 loops=1)
-                      Index Searches: 1
-                      Buffers: shared hit=2351 read=12
-                ->  Index Scan using idx_orders_user_created on orders o  (cost=0.42..74360.15 rows=1000000 width=10) (actual time=0.015..1567.089 rows=1000000.00 loops=1)
-                      Index Searches: 1
-                      Buffers: shared hit=999922 read=3831 written=27
-  ->  Nested Loop  (cost=4521.90..1552915.73 rows=240 width=44) (actual time=3068.625..18452.402 rows=240.00 loops=1)
-        Buffers: shared hit=1002274 read=4014 written=27, temp read=142283 written=541
-        ->  Unique  (cost=0.29..4188.30 rows=24 width=4) (actual time=0.074..79.270 rows=24.00 loops=1)
+                Buffers: shared hit=1001708 read=4375 written=17
+                ->  Index Scan using users_pkey on users u  (cost=0.42..6947.42 rows=200000 width=8) (actual time=0.026..37.266 rows=200000 loops=1)
+                      Buffers: shared hit=1822 read=545
+                ->  Index Scan using idx_orders_user_created on orders o  (cost=0.42..74365.98 rows=1000000 width=10) (actual time=0.013..774.111 rows=1000000 loops=1)
+                      Buffers: shared hit=999886 read=3830 written=17
+  ->  Nested Loop  (cost=4521.90..1552918.37 rows=240 width=44) (actual time=1661.273..5789.858 rows=240 loops=1)
+        Buffers: shared hit=1001709 read=4546 written=17, temp read=142020 written=540
+        ->  Unique  (cost=0.29..4188.30 rows=24 width=4) (actual time=0.040..31.303 rows=24 loops=1)
               Buffers: shared hit=1 read=171
-              ->  Index Only Scan using idx_users_cohort on users  (cost=0.29..3688.30 rows=200000 width=4) (actual time=0.072..47.358 rows=200000.00 loops=1)
+              ->  Index Only Scan using idx_users_cohort on users  (cost=0.29..3688.30 rows=200000 width=4) (actual time=0.038..19.311 rows=200000 loops=1)
                     Heap Fetches: 0
-                    Index Searches: 1
                     Buffers: shared hit=1 read=171
-        ->  Limit  (cost=4521.61..64530.21 rows=10 width=40) (actual time=223.475..765.520 rows=10.00 loops=24)
-              Buffers: shared hit=1002273 read=3843 written=27, temp read=142283 written=541
-              ->  Result  (cost=4521.61..6005381.61 rows=1000 width=40) (actual time=223.473..765.487 rows=10.00 loops=24)
-                    Buffers: shared hit=1002273 read=3843 written=27, temp read=142283 written=541
-                    ->  Sort  (cost=4521.61..4524.11 rows=1000 width=36) (actual time=174.188..174.201 rows=10.00 loops=24)
+        ->  Limit  (cost=4521.61..64530.21 rows=10 width=40) (actual time=87.008..228.047 rows=10 loops=24)
+              Buffers: shared hit=1001708 read=4375 written=17, temp read=142020 written=540
+              ->  Result  (cost=4521.61..6005381.61 rows=1000 width=40) (actual time=87.006..228.037 rows=10 loops=24)
+                    Buffers: shared hit=1001708 read=4375 written=17, temp read=142020 written=540
+                    ->  Sort  (cost=4521.61..4524.11 rows=1000 width=36) (actual time=71.463..71.470 rows=10 loops=24)
                           Sort Key: us.total_spend DESC, us.user_id
                           Sort Method: top-N heapsort  Memory: 25kB
-                          Buffers: shared hit=1002273 read=3843 written=27, temp read=12443 written=540
-                          ->  CTE Scan on user_spend us  (cost=0.00..4500.00 rows=1000 width=36) (actual time=3.309..170.727 rows=7378.62 loops=24)
+                          Buffers: shared hit=1001708 read=4375 written=17, temp read=12420 written=539
+                          ->  CTE Scan on user_spend us  (cost=0.00..4500.00 rows=1000 width=36) (actual time=4.768..69.570 rows=7372 loops=24)
                                 Filter: (cohort_month = users.cohort_month)
-                                Rows Removed by Filter: 169708
-                                Storage: Disk  Maximum Storage: 4324kB
-                                Buffers: shared hit=1002273 read=3843 written=27, temp read=12443 written=540
+                                Rows Removed by Filter: 169547
+                                Buffers: shared hit=1001708 read=4375 written=17, temp read=12420 written=539
                     SubPlan 2
-                      ->  Aggregate  (cost=6000.84..6000.85 rows=1 width=4) (actual time=59.115..59.115 rows=1.00 loops=240)
-                            Buffers: temp read=129840 written=1
-                            ->  CTE Scan on user_spend u2  (cost=0.00..6000.00 rows=334 width=0) (actual time=0.038..59.103 rows=5.50 loops=240)
-                                  Filter: ((cohort_month = users.cohort_month) AND ((total_spend > us.total_spend) OR ((total_spend = us.total_spend) AND (user_id <= us.user_id))))
-                                  Rows Removed by Filter: 177082
-                                  Storage: Disk  Maximum Storage: 4324kB
-                                  Buffers: temp read=129840 written=1
+                      ->  Aggregate  (cost=6000.84..6000.85 rows=1 width=4) (actual time=15.646..15.646 rows=1 loops=240)
+                            Buffers: temp read=129600 written=1
+                            ->  CTE Scan on user_spend u2  (cost=0.00..6000.00 rows=334 width=0) (actual time=0.005..15.641 rows=6 loops=240)
+                                  Filter: ((cohort_month = $1) AND ((total_spend > us.total_spend) OR ((total_spend = us.total_spend) AND (user_id <= us.user_id))))
+                                  Rows Removed by Filter: 176914
+                                  Buffers: temp read=129600 written=1
 Planning:
-  Buffers: shared hit=18 read=1
-Planning Time: 1.062 ms
-Execution Time: 18464.011 ms
+  Buffers: shared hit=20 read=1
+Planning Time: 0.638 ms
+JIT:
+  Functions: 28
+  Options: Inlining true, Optimization true, Expressions true, Deforming true
+  Timing: Generation 1.966 ms, Inlining 19.791 ms, Optimization 154.472 ms, Emission 111.004 ms, Total 287.233 ms
+Execution Time: 5795.646 ms

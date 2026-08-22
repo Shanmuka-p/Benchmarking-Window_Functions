@@ -1,15 +1,16 @@
-Incremental Sort  (cost=4.82..134905.60 rows=1000000 width=84) (actual time=159.569..4387.909 rows=1000000.00 loops=1)
+Incremental Sort  (cost=3.31..151455.35 rows=1000000 width=84) (actual time=136.644..2541.619 rows=1000000 loops=1)
   Sort Key: user_id, order_id
   Presorted Key: user_id
-  Full-sort Groups: 21669  Sort Method: quicksort  Average Memory: 28kB  Peak Memory: 28kB
-  Pre-sorted Groups: 1267  Sort Method: quicksort  Average Memory: 3267kB  Peak Memory: 3267kB
-  Buffers: shared hit=1003753
-  ->  WindowAgg  (cost=2.21..99360.15 rows=1000000 width=84) (actual time=87.672..3753.506 rows=1000000.00 loops=1)
-        Window: w1 AS (PARTITION BY user_id)
-        Storage: Memory  Maximum Storage: 2731kB
-        Buffers: shared hit=1003753
-        ->  Index Scan using idx_orders_user_created on orders  (cost=0.42..74360.15 rows=1000000 width=26) (actual time=0.034..1596.877 rows=1000000.00 loops=1)
-              Index Searches: 1
-              Buffers: shared hit=1003753
-Planning Time: 0.145 ms
-Execution Time: 4450.540 ms
+  Full-sort Groups: 21673  Sort Method: quicksort  Average Memory: 29kB  Peak Memory: 29kB
+  Pre-sorted Groups: 1252  Sort Method: quicksort  Average Memory: 3853kB  Peak Memory: 3853kB
+  Buffers: shared hit=1003716
+  ->  WindowAgg  (cost=0.42..99365.98 rows=1000000 width=84) (actual time=89.349..2120.765 rows=1000000 loops=1)
+        Buffers: shared hit=1003716
+        ->  Index Scan using idx_orders_user_created on orders  (cost=0.42..74365.98 rows=1000000 width=26) (actual time=9.551..872.986 rows=1000000 loops=1)
+              Buffers: shared hit=1003716
+Planning Time: 0.123 ms
+JIT:
+  Functions: 7
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 0.759 ms, Inlining 0.000 ms, Optimization 0.312 ms, Emission 9.193 ms, Total 10.264 ms
+Execution Time: 2602.088 ms

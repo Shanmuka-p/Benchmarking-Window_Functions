@@ -1,15 +1,19 @@
-Subquery Scan on user_order_arrays  (cost=175336.84..191539.14 rows=48092 width=84) (actual time=486.930..1221.025 rows=177087.00 loops=1)
-  Buffers: shared hit=10988, temp read=11985 written=12004
-  ->  GroupAggregate  (cost=175336.84..191298.68 rows=48092 width=84) (actual time=486.927..1195.356 rows=177087.00 loops=1)
+Subquery Scan on user_order_arrays  (cost=175338.84..192001.90 rows=47516 width=84) (actual time=803.991..3067.162 rows=176919 loops=1)
+  Buffers: shared hit=1130 read=9870, temp read=11987 written=12012
+  ->  GroupAggregate  (cost=175338.84..191289.16 rows=47516 width=84) (actual time=803.981..3011.588 rows=176919 loops=1)
         Group Key: orders.user_id
-        Buffers: shared hit=10988, temp read=11985 written=12004
-        ->  Sort  (cost=175336.84..177836.84 rows=1000000 width=34) (actual time=464.045..551.144 rows=1000000.00 loops=1)
-              Sort Key: orders.user_id, orders.created_at, orders.order_id
-              Sort Method: external merge  Disk: 47944kB
-              Buffers: shared hit=10988, temp read=11985 written=12004
-              ->  Seq Scan on orders  (cost=0.00..20988.00 rows=1000000 width=34) (actual time=0.009..70.150 rows=1000000.00 loops=1)
-                    Buffers: shared hit=10988
+        Buffers: shared hit=1130 read=9870, temp read=11987 written=12012
+        ->  Sort  (cost=175338.84..177838.84 rows=1000000 width=34) (actual time=715.935..897.864 rows=1000000 loops=1)
+              Sort Key: orders.user_id
+              Sort Method: external merge  Disk: 47960kB
+              Buffers: shared hit=1120 read=9870, temp read=11987 written=12012
+              ->  Seq Scan on orders  (cost=0.00..20990.00 rows=1000000 width=34) (actual time=8.520..139.247 rows=1000000 loops=1)
+                    Buffers: shared hit=1120 read=9870
 Planning:
-  Buffers: shared hit=16
-Planning Time: 0.147 ms
-Execution Time: 1230.521 ms
+  Buffers: shared hit=6
+Planning Time: 0.143 ms
+JIT:
+  Functions: 8
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 0.752 ms, Inlining 0.000 ms, Optimization 0.261 ms, Emission 8.223 ms, Total 9.235 ms
+Execution Time: 3087.919 ms

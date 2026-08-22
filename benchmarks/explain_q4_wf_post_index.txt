@@ -1,59 +1,52 @@
-Subquery Scan on lagged  (cost=90360.49..93624.20 rows=155 width=12) (actual time=2138.046..2392.237 rows=48480.00 loops=1)
+Subquery Scan on lagged  (cost=91144.51..97348.38 rows=158 width=12) (actual time=1154.282..1577.462 rows=48940 loops=1)
   Filter: ((lagged.orders_last_30d < lagged.orders_prev_30d) AND (lagged.period_id = 2))
-  Rows Removed by Filter: 185060
-  Buffers: shared hit=22911 read=931 written=13, temp read=3734 written=4849
-  ->  WindowAgg  (cost=90360.49..92225.45 rows=93250 width=16) (actual time=2138.025..2361.109 rows=233540.00 loops=1)
-        Window: w1 AS (PARTITION BY orders.user_id ORDER BY "*VALUES*".column1)
-        Storage: Memory  Maximum Storage: 17kB
-        Buffers: shared hit=22911 read=931 written=13, temp read=3734 written=4849
-        ->  Sort  (cost=90360.45..90593.57 rows=93250 width=12) (actual time=2137.959..2187.783 rows=233540.00 loops=1)
-              Sort Key: orders.user_id, "*VALUES*".column1
-              Sort Method: external merge  Disk: 5048kB
-              Buffers: shared hit=22911 read=931 written=13, temp read=3734 written=4849
-              ->  HashAggregate  (cost=81497.59..82663.21 rows=93250 width=12) (actual time=1794.220..1981.975 rows=233540.00 loops=1)
-                    Group Key: orders.user_id, "*VALUES*".column1
-                    Batches: 5  Memory Usage: 8249kB  Disk Usage: 11096kB
-                    Buffers: shared hit=22911 read=931 written=13, temp read=3103 written=4215
-                    ->  Hash Right Join  (cost=33813.39..80738.03 rows=101275 width=24) (actual time=516.935..1507.361 rows=417664.00 loops=1)
+  Rows Removed by Filter: 184136
+  Buffers: shared hit=22913 read=929 written=1, temp read=3667 written=3743
+  ->  WindowAgg  (cost=91144.51..95928.33 rows=94670 width=16) (actual time=1151.930..1550.129 rows=233076 loops=1)
+        Buffers: shared hit=22913 read=929 written=1, temp read=3667 written=3743
+        ->  GroupAggregate  (cost=91144.51..93324.90 rows=94670 width=12) (actual time=1150.482..1380.637 rows=233076 loops=1)
+              Group Key: orders.user_id, "*VALUES*".column1
+              Buffers: shared hit=22913 read=929 written=1, temp read=3667 written=3743
+              ->  Sort  (cost=91144.51..91393.76 rows=99702 width=24) (actual time=1148.878..1244.927 rows=417027 loops=1)
+                    Sort Key: orders.user_id, "*VALUES*".column1
+                    Sort Method: external merge  Disk: 12696kB
+                    Buffers: shared hit=22913 read=929 written=1, temp read=3667 written=3743
+                    ->  Hash Right Join  (cost=34174.06..80819.08 rows=99702 width=24) (actual time=452.907..955.186 rows=417027 loops=1)
                           Hash Cond: (o.user_id = orders.user_id)
                           Join Filter: ((("*VALUES*".column1 = 1) AND (o.created_at >= (CURRENT_DATE - '60 days'::interval)) AND (o.created_at < (CURRENT_DATE - '30 days'::interval))) OR (("*VALUES*".column1 = 2) AND (o.created_at >= (CURRENT_DATE - '30 days'::interval))))
-                          Rows Removed by Join Filter: 339013
-                          Buffers: shared hit=22911 read=931 written=13, temp read=2034 written=2034
-                          ->  Bitmap Heap Scan on orders o  (cost=6856.41..28894.44 rows=311120 width=28) (actual time=38.526..129.020 rows=339013.00 loops=1)
+                          Rows Removed by Join Filter: 338435
+                          Buffers: shared hit=22913 read=929 written=1, temp read=2080 written=2148
+                          ->  Bitmap Heap Scan on orders o  (cost=6809.46..28757.74 rows=308758 width=28) (actual time=39.128..106.309 rows=338435 loops=1)
                                 Recheck Cond: (((created_at >= (CURRENT_DATE - '60 days'::interval)) AND (created_at < (CURRENT_DATE - '30 days'::interval))) OR (created_at >= (CURRENT_DATE - '30 days'::interval)))
-                                Heap Blocks: exact=10988
+                                Heap Blocks: exact=10990
                                 Buffers: shared hit=11920 read=1
-                                ->  BitmapOr  (cost=6856.41..6856.41 rows=340001 width=0) (actual time=35.822..35.825 rows=0.00 loops=1)
-                                      Buffers: shared hit=932 read=1
-                                      ->  Bitmap Index Scan on idx_orders_created  (cost=0.00..3476.33 rows=165589 width=0) (actual time=15.191..15.191 rows=166772.00 loops=1)
+                                ->  BitmapOr  (cost=6809.46..6809.46 rows=337178 width=0) (actual time=36.741..36.743 rows=0 loops=1)
+                                      Buffers: shared hit=930 read=1
+                                      ->  Bitmap Index Scan on idx_orders_created  (cost=0.00..3505.95 rows=166952 width=0) (actual time=18.512..18.512 rows=167231 loops=1)
                                             Index Cond: ((created_at >= (CURRENT_DATE - '60 days'::interval)) AND (created_at < (CURRENT_DATE - '30 days'::interval)))
-                                            Index Searches: 1
-                                            Buffers: shared hit=459
-                                      ->  Bitmap Index Scan on idx_orders_created  (cost=0.00..3224.52 rows=174412 width=0) (actual time=20.628..20.628 rows=172241.00 loops=1)
+                                            Buffers: shared hit=460
+                                      ->  Bitmap Index Scan on idx_orders_created  (cost=0.00..3149.12 rows=170226 width=0) (actual time=18.225..18.225 rows=171204 loops=1)
                                             Index Cond: (created_at >= (CURRENT_DATE - '30 days'::interval))
-                                            Index Searches: 1
-                                            Buffers: shared hit=473 read=1
-                          ->  Hash  (cost=25791.36..25791.36 rows=93250 width=8) (actual time=477.956..477.962 rows=233540.00 loops=1)
-                                Buckets: 262144 (originally 131072)  Batches: 2 (originally 1)  Memory Usage: 6629kB
-                                Buffers: shared hit=10991 read=930 written=13, temp written=397
-                                ->  Nested Loop  (cost=24159.46..25791.36 rows=93250 width=8) (actual time=300.682..407.703 rows=233540.00 loops=1)
-                                      Buffers: shared hit=10991 read=930 written=13
-                                      ->  HashAggregate  (cost=24159.46..24625.71 rows=46625 width=4) (actual time=300.655..327.365 rows=116770.00 loops=1)
+                                            Buffers: shared hit=470 read=1
+                          ->  Hash  (cost=26181.22..26181.22 rows=94670 width=8) (actual time=413.097..413.100 rows=233076 loops=1)
+                                Buckets: 262144 (originally 131072)  Batches: 2 (originally 1)  Memory Usage: 6613kB
+                                Buffers: shared hit=10993 read=928 written=1, temp read=49 written=514
+                                ->  Nested Loop  (cost=24051.12..26181.22 rows=94670 width=8) (actual time=269.333..359.111 rows=233076 loops=1)
+                                      Buffers: shared hit=10993 read=928 written=1, temp read=49 written=117
+                                      ->  HashAggregate  (cost=24051.12..24524.47 rows=47335 width=4) (actual time=269.323..298.612 rows=116538 loops=1)
                                             Group Key: orders.user_id
-                                            Batches: 1  Memory Usage: 6937kB
-                                            Buffers: shared hit=10991 read=930 written=13
-                                            ->  Bitmap Heap Scan on orders  (cost=6371.44..23309.46 rows=340001 width=4) (actual time=67.450..152.374 rows=339013.00 loops=1)
+                                            Batches: 5  Memory Usage: 11057kB  Disk Usage: 672kB
+                                            Buffers: shared hit=10993 read=928 written=1, temp read=49 written=117
+                                            ->  Bitmap Heap Scan on orders  (cost=6317.56..23208.17 rows=337178 width=4) (actual time=39.417..114.005 rows=338435 loops=1)
                                                   Recheck Cond: (created_at >= (CURRENT_DATE - '60 days'::interval))
-                                                  Heap Blocks: exact=10988
-                                                  Buffers: shared hit=10991 read=930 written=13
-                                                  ->  Bitmap Index Scan on idx_orders_created  (cost=0.00..6286.44 rows=340001 width=0) (actual time=63.811..63.811 rows=339013.00 loops=1)
+                                                  Heap Blocks: exact=10990
+                                                  Buffers: shared hit=10993 read=928 written=1
+                                                  ->  Bitmap Index Scan on idx_orders_created  (cost=0.00..6233.27 rows=337178 width=0) (actual time=37.200..37.201 rows=338435 loops=1)
                                                         Index Cond: (created_at >= (CURRENT_DATE - '60 days'::interval))
-                                                        Index Searches: 1
-                                                        Buffers: shared hit=3 read=930 written=13
-                                      ->  Materialize  (cost=0.00..0.04 rows=2 width=4) (actual time=0.000..0.000 rows=2.00 loops=116770)
-                                            Storage: Memory  Maximum Storage: 17kB
-                                            ->  Values Scan on "*VALUES*"  (cost=0.00..0.03 rows=2 width=4) (actual time=0.004..0.005 rows=2.00 loops=1)
+                                                        Buffers: shared hit=3 read=928 written=1
+                                      ->  Materialize  (cost=0.00..0.04 rows=2 width=4) (actual time=0.000..0.000 rows=2 loops=116538)
+                                            ->  Values Scan on "*VALUES*"  (cost=0.00..0.03 rows=2 width=4) (actual time=0.002..0.003 rows=2 loops=1)
 Planning:
   Buffers: shared hit=5 read=1
-Planning Time: 0.686 ms
-Execution Time: 2411.395 ms
+Planning Time: 0.547 ms
+Execution Time: 1587.145 ms

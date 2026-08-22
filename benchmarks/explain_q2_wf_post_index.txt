@@ -1,32 +1,32 @@
-Sort  (cost=140279.59..140446.26 rows=66667 width=44) (actual time=975.597..975.605 rows=240.00 loops=1)
+Sort  (cost=142286.02..142452.68 rows=66667 width=44) (actual time=1854.924..1854.952 rows=240 loops=1)
   Sort Key: ranked_users.cohort_month DESC, ranked_users.rank_in_cohort, ranked_users.user_id
-  Sort Method: quicksort  Memory: 34kB
-  Buffers: shared hit=1002288 read=3831 written=5, temp read=543 written=545
-  ->  Subquery Scan on ranked_users  (cost=125387.03..132887.00 rows=66667 width=44) (actual time=900.904..975.532 rows=240.00 loops=1)
+  Sort Method: quicksort  Memory: 40kB
+  Buffers: shared hit=993152 read=12934 written=5, temp read=542 written=545
+  ->  Subquery Scan on ranked_users  (cost=127393.43..134893.43 rows=66667 width=44) (actual time=1644.538..1854.614 rows=240 loops=1)
         Filter: (ranked_users.rank_in_cohort <= 10)
-        Rows Removed by Filter: 176847
-        Buffers: shared hit=1002288 read=3831 written=5, temp read=543 written=545
-        ->  WindowAgg  (cost=125387.03..130387.00 rows=200000 width=44) (actual time=900.903..969.783 rows=177087.00 loops=1)
-              Window: w1 AS (PARTITION BY u.cohort_month ORDER BY (round(sum(o.amount), 2)), u.user_id ROWS UNBOUNDED PRECEDING)
-              Storage: Memory  Maximum Storage: 17kB
-              Buffers: shared hit=1002288 read=3831 written=5, temp read=543 written=545
-              ->  Sort  (cost=125387.00..125887.00 rows=200000 width=40) (actual time=900.887..923.609 rows=177087.00 loops=1)
+        Rows Removed by Filter: 176679
+        Buffers: shared hit=993152 read=12934 written=5, temp read=542 written=545
+        ->  WindowAgg  (cost=127393.43..132393.43 rows=200000 width=44) (actual time=1644.534..1839.611 rows=176919 loops=1)
+              Buffers: shared hit=993152 read=12934 written=5, temp read=542 written=545
+              ->  Sort  (cost=127393.43..127893.43 rows=200000 width=40) (actual time=1644.473..1708.981 rows=176919 loops=1)
                     Sort Key: u.cohort_month, (round(sum(o.amount), 2)) DESC, u.user_id
-                    Sort Method: external merge  Disk: 4344kB
-                    Buffers: shared hit=1002288 read=3831 written=5, temp read=543 written=545
-                    ->  GroupAggregate  (cost=3708.63..102306.86 rows=200000 width=40) (actual time=30.261..791.868 rows=177087.00 loops=1)
+                    Sort Method: external merge  Disk: 4336kB
+                    Buffers: shared hit=993152 read=12934 written=5, temp read=542 written=545
+                    ->  GroupAggregate  (cost=3754.96..102313.29 rows=200000 width=40) (actual time=175.977..1387.599 rows=176919 loops=1)
                           Group Key: u.user_id
-                          Buffers: shared hit=1002285 read=3831 written=5
-                          ->  Merge Join  (cost=3708.63..94306.86 rows=1000000 width=14) (actual time=0.017..670.133 rows=1000000.00 loops=1)
+                          Buffers: shared hit=993149 read=12934 written=5
+                          ->  Merge Join  (cost=3754.96..94313.29 rows=1000000 width=14) (actual time=9.743..1142.849 rows=1000000 loops=1)
                                 Merge Cond: (u.user_id = o.user_id)
-                                Buffers: shared hit=1002285 read=3831 written=5
-                                ->  Index Scan using users_pkey on users u  (cost=0.42..6947.42 rows=200000 width=8) (actual time=0.008..31.821 rows=200000.00 loops=1)
-                                      Index Searches: 1
-                                      Buffers: shared hit=2363
-                                ->  Index Scan using idx_orders_user_created on orders o  (cost=0.42..74360.15 rows=1000000 width=10) (actual time=0.006..512.840 rows=1000000.00 loops=1)
-                                      Index Searches: 1
-                                      Buffers: shared hit=999922 read=3831 written=5
+                                Buffers: shared hit=993149 read=12934 written=5
+                                ->  Index Scan using users_pkey on users u  (cost=0.42..6947.42 rows=200000 width=8) (actual time=0.051..48.550 rows=200000 loops=1)
+                                      Buffers: shared hit=1822 read=545 written=2
+                                ->  Index Scan using idx_orders_user_created on orders o  (cost=0.42..74365.98 rows=1000000 width=10) (actual time=0.023..854.838 rows=1000000 loops=1)
+                                      Buffers: shared hit=991327 read=12389 written=3
 Planning:
-  Buffers: shared hit=105 read=6
-Planning Time: 1.528 ms
-Execution Time: 980.476 ms
+  Buffers: shared hit=106 read=6
+Planning Time: 1.232 ms
+JIT:
+  Functions: 15
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 0.944 ms, Inlining 0.000 ms, Optimization 0.298 ms, Emission 9.435 ms, Total 10.677 ms
+Execution Time: 1857.374 ms

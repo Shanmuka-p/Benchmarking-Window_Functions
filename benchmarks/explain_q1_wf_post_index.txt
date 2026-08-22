@@ -1,19 +1,21 @@
-WindowAgg  (cost=86386.66..107906.96 rows=506361 width=68) (actual time=263.546..332.296 rows=91.00 loops=1)
-  Window: w1 AS (ORDER BY ((orders.created_at)::date) ROWS BETWEEN '6'::bigint PRECEDING AND CURRENT ROW)
-  Storage: Memory  Maximum Storage: 17kB
-  Buffers: shared hit=10991, temp read=1304 written=1311
-  ->  GroupAggregate  (cost=86386.62..97779.74 rows=506361 width=36) (actual time=262.777..332.125 rows=91.00 loops=1)
+WindowAgg  (cost=86186.50..112682.93 rows=504694 width=68) (actual time=496.952..608.008 rows=91 loops=1)
+  Buffers: shared hit=2307 read=8686, temp read=1297 written=1306
+  ->  GroupAggregate  (cost=86186.50..97542.11 rows=504694 width=36) (actual time=472.923..584.990 rows=91 loops=1)
         Group Key: ((orders.created_at)::date)
-        Buffers: shared hit=10991, temp read=1304 written=1311
-        ->  Sort  (cost=86386.62..87652.52 rows=506361 width=10) (actual time=262.050..290.340 rows=505959.00 loops=1)
+        Buffers: shared hit=2307 read=8686, temp read=1297 written=1306
+        ->  Sort  (cost=86186.50..87448.23 rows=504694 width=10) (actual time=471.673..523.280 rows=504799 loops=1)
               Sort Key: ((orders.created_at)::date)
-              Sort Method: external merge  Disk: 10432kB
-              Buffers: shared hit=10991, temp read=1304 written=1311
-              ->  Seq Scan on orders  (cost=0.00..29753.90 rows=506361 width=10) (actual time=0.017..193.084 rows=505959.00 loops=1)
+              Sort Method: external merge  Disk: 10376kB
+              Buffers: shared hit=2307 read=8686, temp read=1297 written=1306
+              ->  Seq Scan on orders  (cost=0.00..29751.74 rows=504694 width=10) (actual time=0.109..305.149 rows=504799 loops=1)
                     Filter: (created_at >= (CURRENT_DATE - '90 days'::interval))
-                    Rows Removed by Filter: 494041
-                    Buffers: shared hit=10988
+                    Rows Removed by Filter: 495201
+                    Buffers: shared hit=2304 read=8686
 Planning:
-  Buffers: shared hit=182 read=2
-Planning Time: 1.146 ms
-Execution Time: 334.124 ms
+  Buffers: shared hit=172 read=2
+Planning Time: 1.842 ms
+JIT:
+  Functions: 15
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 2.306 ms, Inlining 0.000 ms, Optimization 1.021 ms, Emission 21.743 ms, Total 25.070 ms
+Execution Time: 638.933 ms
