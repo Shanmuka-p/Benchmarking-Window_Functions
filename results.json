@@ -1,0 +1,46 @@
+{
+  "query_1": {
+    "wf_ms": 335.09,
+    "cte_ms": 235.14,
+    "index_speedup": 0.93
+  },
+  "query_2": {
+    "wf_ms": 1078.88,
+    "cte_ms": 16101.24,
+    "index_speedup": 0.85
+  },
+  "query_3": {
+    "wf_ms": 2605.17,
+    "cte_ms": 4654.24,
+    "index_speedup": 0.32
+  },
+  "query_4": {
+    "wf_ms": 2409.2,
+    "cte_ms": 455.06,
+    "index_speedup": 0.51
+  },
+  "query_5": {
+    "wf_ms": 4203.5,
+    "cte_ms": 5126.43,
+    "index_speedup": 0.26
+  },
+  "pgbench_results": {
+    "q1_wf_tps": 13.040346,
+    "q1_wf_latency_ms": 766.851,
+    "q1_cte_tps": 13.222603,
+    "q1_cte_latency_ms": 756.281,
+    "q2_wf_tps": 2.534229,
+    "q2_wf_latency_ms": 3945.974,
+    "q2_cte_tps": 0.516873,
+    "q2_cte_latency_ms": 19347.114,
+    "wf_tps": 13.040346,
+    "cte_tps": 13.222603
+  },
+  "recursive_referral_ms": 572.52,
+  "materialized_view": {
+    "initial_creation_ms": 336.79,
+    "refresh_ms": 361.97,
+    "raw_wf_read_ms": 323.94,
+    "mv_read_ms": 0.02
+  }
+}
